@@ -1,0 +1,7 @@
+services:
+  app:
+    image: hema995/php-demo:1
+    ports:
+      - "9000:9000"
+    deploy:
+      replicas: 2
