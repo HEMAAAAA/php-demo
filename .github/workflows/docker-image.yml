@@ -1,4 +1,4 @@
-name: Docker Image CI and Deploy
+name: Docker Image CI
 
 on:
   push:
@@ -7,30 +7,18 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-deploy:
+
+  build:
+
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
-    
     - name: Log in to DockerHub
       run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-    
-    - name: Build and Push Docker image
+    - name: Build the Docker image
       run: |
         IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/php-demo"
         TAG="${{ github.run_number }}"
         docker build -t $IMAGE:$TAG .
         docker push $IMAGE:$TAG
-        echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
-    
-    - name: Update Docker Compose file
-      run: |
-        sed -i "s|image: ${{ secrets.DOCKERHUB_USERNAME }}/php-demo:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/php-demo:${{ env.IMAGE_TAG }}|" docker-compose.yml
-        git config --global user.email "github-actions@github.com"
-        git config --global user.name "GitHub Actions"
-        git add docker-compose.yml
-        git commit -m "Update Docker Compose image tag to ${{ env.IMAGE_TAG }}"
-        git push
-    
-   
