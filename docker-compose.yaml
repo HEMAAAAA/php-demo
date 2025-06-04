@@ -1,5 +1,5 @@
 services:
   app:
-    image: hemaaaaa/php-demo:latest
+    image: hema995/php-demo:latest
     ports:
       - "9000:80"
