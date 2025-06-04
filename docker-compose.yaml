@@ -1,6 +1,6 @@
 services:
   app:
-    image: hema995/php-demo:2
+    image: hema995/php-demo:latest
     ports:
       - "9000:9000"
     deploy:
