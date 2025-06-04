@@ -1,5 +1,5 @@
-# Use PHP 8.1 FPM image as the base
-FROM php:8.1-fpm
+# Use PHP 8.1 CLI image as the base
+FROM php:8.1
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -17,15 +17,16 @@ WORKDIR /var/www/html
 
 # Copy application files
 COPY . .
-# Set permissions for the application files
+
+# Set permissions
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html
 
-# Generate composer.lock file and install dependencies
+# Install PHP dependencies
 RUN composer update --no-dev && composer install --no-dev --optimize-autoloader
 
-# Expose port 9000 for PHP-FPM
+# Expose HTTP port
 EXPOSE 9000
 
-# Start PHP-FPM server
-CMD ["php-fpm"]
+# Start built-in PHP web server
+CMD ["php", "-S", "0.0.0.0:9000", "-t", "web"]
