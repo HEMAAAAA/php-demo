@@ -1,0 +1,5 @@
+services:
+  app:
+    image: hemaaaaa/php-demo:latest
+    ports:
+      - "9000:80"
