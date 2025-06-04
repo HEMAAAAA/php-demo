@@ -7,18 +7,45 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
     - name: Log in to DockerHub
       run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-    - name: Build the Docker image
+
+    - name: Build and Push Docker Image
       run: |
         IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/php-demo"
-        TAG="${{ github.run_number }}"
+        TAG="latest"
         docker build -t $IMAGE:$TAG .
         docker push $IMAGE:$TAG
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to Swarm 1
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.SERVER_HOST1 }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_KEY }}
+        script: |
+          docker service update --with-registry-auth --image ${{ secrets.DOCKERHUB_USERNAME }}/php-demo:latest php-demo_app || \
+          docker stack deploy --with-registry-auth -c /home/ubuntu/app/docker-compose.yaml php-demo
+
+    - name: Deploy to Swarm 2
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.SERVER_HOST2 }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_KEY }}
+        script: |
+          docker service update --with-registry-auth --image ${{ secrets.DOCKERHUB_USERNAME }}/php-demo:latest php-demo_app || \
+          docker stack deploy --with-registry-auth -c /home/ubuntu/app/docker-compose.yaml php-demo
