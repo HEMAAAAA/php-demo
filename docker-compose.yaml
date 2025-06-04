@@ -1,6 +1,9 @@
 services:
   app:
     image: hema995/php-demo:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "9000:9000"
     deploy:
